@@ -1,0 +1,4 @@
+{{if .UseAsdf}}
+use asdf
+{{end}}
+dotenv_if_exists .env

@@ -1,0 +1,13 @@
+source ~/.zshenv
+source ~/.zshrc
+
+ if [[ -v CLUSTER_HOME ]]
+ then
+   if [[ -f "$CLUSTER_HOME"/.envrc ]]
+   then
+     direnv allow "$CLUSTER_HOME"
+   fi
+
+   cd "$CLUSTER_HOME"
+ fi
+

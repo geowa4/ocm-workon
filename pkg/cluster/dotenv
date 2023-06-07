@@ -1,0 +1,18 @@
+KUBECONFIG={{.ClusterBase}}/{{.Environment}}/{{.ClusterData.Name}}/kubeconfig
+BACKPLANE_CONFIG=~/.config/backplane/config.{{.Environment}}.json
+OCM_ENVIRONMENT={{.Environment}}
+OCM_CONFIG=~/.config/ocm/ocm.{{.Environment}}.json
+OCM_URL='{{.OcmUrl}}'
+
+CLUSTER_ID={{.ClusterData.InternalID}}
+INTERNAL_ID={{.ClusterData.InternalID}}
+
+{{if .ClusterData.ManagementCluster}}
+MANAGEMENT_CLUSTER={{.ClusterData.ManagementCluster}}
+SERVICE_CLUSTER={{.ClusterData.ServiceCluster}}
+HCP_NS={{.HCPNamespacePrefix}}{{.ClusterData.InternalID}}-{{.ClusterData.Name}}
+HCP_NS_CFG={{.HCPNamespacePrefix}}{{.ClusterData.InternalID}}
+{{else}}
+HIVE_SHARD={{.ClusterData.HiveShard}}
+INFRA_ID={{.ClusterData.InfraID}}
+{{end}}
