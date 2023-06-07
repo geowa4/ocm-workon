@@ -28,6 +28,7 @@ type WorkConfig struct {
 	HCPNamespacePrefix string
 	UseDirenv          bool
 	UseAsdf            bool
+	UserHomeDir        string
 	ClusterData        *NormalizedClusterData
 }
 
@@ -50,6 +51,7 @@ func (w *WorkConfig) setEnvDependentFields() {
 		w.OcmUrl = StagingOcmUrl
 		w.HCPNamespacePrefix = StagingHCPNamespacePrefix
 	}
+	w.UserHomeDir, _ = os.UserHomeDir()
 }
 
 func (w *WorkConfig) createClusterDir() string {

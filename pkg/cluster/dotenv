@@ -1,7 +1,7 @@
 KUBECONFIG={{.ClusterBase}}/{{.Environment}}/{{.ClusterData.Name}}/kubeconfig
-BACKPLANE_CONFIG=~/.config/backplane/config.{{.Environment}}.json
+BACKPLANE_CONFIG={{.UserHomeDir}}/.config/backplane/config.{{.Environment}}.json
 OCM_ENVIRONMENT={{.Environment}}
-OCM_CONFIG=~/.config/ocm/ocm.{{.Environment}}.json
+OCM_CONFIG={{.UserHomeDir}}/.config/ocm/ocm.{{.Environment}}.json
 OCM_URL='{{.OcmUrl}}'
 
 CLUSTER_ID={{.ClusterData.InternalID}}
