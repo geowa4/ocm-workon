@@ -23,14 +23,10 @@ Most arguments can be read from environment variables or via a configuration fil
 While not required, [direnv](https://direnv.net/) is highly recommended.
 Other useful additions are [asdf](https://asdf-vm.com/) and [asdf-direnv](https://github.com/asdf-community/asdf-direnv).
 
-This is a good starting point.
+This is a good starting point if you have zsh installed at /bin/zsh.
 
 ```yaml
 cluster_base_directory: /home/geowa4/Clusters
-cluster_shell: /bin/zsh
-cluster_shell_args:
-  - '--login'
-  - '-i'
 cluster_use_direnv: true
 ```
 
