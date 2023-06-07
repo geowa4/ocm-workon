@@ -2,6 +2,21 @@
 
 A utility to help people working on multiple OpenShift clusters--potentially at the same time.
 
+## Building
+
+Build with make.
+
+```shell
+make clean build
+```
+
+This will create a file `./bin/ocm-workon`.
+Copy this onto your `$PATH` to run it.
+
+```shell
+ocm workon
+```
+
 ## Configuration
 
 Most arguments can be read from environment variables or via a configuration file located in `${$XDG_CONFIG_DIR:-$HOME/.config}/ocm/workon.yaml`.
