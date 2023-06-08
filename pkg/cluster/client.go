@@ -18,6 +18,11 @@ type NormalizedClusterData struct {
 	ServiceCluster    string
 }
 
+func NewNormalizedCluster(searchPattern string) (*NormalizedClusterData, error) {
+	clusterClient := NewClient(searchPattern)
+	return clusterClient.CollectNormalizedClusterData()
+}
+
 type Client struct {
 	conn          *sdk.Connection
 	searchPattern string

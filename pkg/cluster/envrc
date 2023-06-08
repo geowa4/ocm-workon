@@ -1,4 +1,5 @@
 {{if .UseAsdf}}
 use asdf
 {{end}}
-dotenv_if_exists .env
+dotenv_if_exists .env.cluster
+dotenv_if_exists .env.local

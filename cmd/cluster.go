@@ -3,10 +3,10 @@ package cmd
 import (
 	"fmt"
 	"github.com/geowa4/ocm-workon/pkg/cluster"
+	"github.com/geowa4/ocm-workon/pkg/shell"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"os"
-	"syscall"
 )
 
 // clusterCmd represents the cluster command
@@ -23,7 +23,7 @@ Example: cluster --production 15d716b7-b933-41ef-924c-53c2b59afe4f`,
 			environment = cluster.ProductionEnvironment
 		}
 
-		ncd, err := loadNormalizedClusterData(args[0])
+		ncd, err := cluster.NewNormalizedCluster(args[0])
 		if err != nil {
 			fmt.Printf("error retrieving cluster data: %q\n", err)
 			os.Exit(1)
@@ -44,26 +44,12 @@ Example: cluster --production 15d716b7-b933-41ef-924c-53c2b59afe4f`,
 			if err = recordedCluster.RecordAccess(baseDir); err != nil {
 				_, _ = fmt.Fprintf(os.Stderr, "[WARN] access of this cluster will not be recorded due to error: %q\n", err)
 			}
-			execShell(baseDir, clusterDir)
+			if err = shell.Exec(baseDir, clusterDir); err != nil {
+				fmt.Println(err)
+				os.Exit(3)
+			}
 		}
 	},
-}
-
-func loadNormalizedClusterData(clusterSearchPattern string) (*cluster.NormalizedClusterData, error) {
-	clusterClient := cluster.NewClient(clusterSearchPattern)
-	return clusterClient.CollectNormalizedClusterData()
-}
-
-func execShell(baseDir string, clusterDir string) {
-	environ := append(os.Environ(),
-		"ZDOTDIR="+viper.GetString("cluster_base_directory"),
-		"CLUSTER_HOME="+clusterDir,
-		"CLUSTER_BASE_DIRECRTORY="+baseDir)
-	err := syscall.Exec(viper.GetString("cluster_shell"), viper.GetStringSlice("cluster_shell_args"), environ)
-	if err != nil {
-		fmt.Printf("error running syscall: %q\n", err)
-		os.Exit(3)
-	}
 }
 
 func init() {

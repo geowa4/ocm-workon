@@ -93,26 +93,26 @@ func (w *WorkConfig) Build() (string, error) {
 }
 
 func (w *WorkConfig) makeDotenv(clusterDir string) error {
-	dotenvFilePath := clusterDir + pathSep + ".env"
+	dotenvFilePath := clusterDir + pathSep + ".env.cluster"
 	if _, err := os.Lstat(dotenvFilePath); os.IsNotExist(err) {
 		_, err = os.OpenFile(dotenvFilePath, os.O_CREATE, 0744)
 		if err != nil {
 			return err
 		}
-		dotenvFile, err := os.OpenFile(dotenvFilePath, os.O_APPEND|os.O_WRONLY, 0644)
-		if err != nil {
-			return fmt.Errorf("error opening dotenv file in %s: %q", clusterDir, err)
-		}
-		defer closeFile(dotenvFile)
-		dotenvTemplate, err := template.New("dotenv").Parse(dotenvContent)
-		if err != nil {
-			return fmt.Errorf("error generating content for dotenv file in %s: %q", clusterDir, err)
-		}
-		if err = dotenvTemplate.Execute(dotenvFile, w); err != nil {
-			return fmt.Errorf("error writing to dotenv file in %s: %q", clusterDir, err)
-		}
 	} else if err != nil {
 		return fmt.Errorf("error creating dotenv file in %s: %q", clusterDir, err)
+	}
+	dotenvFile, err := os.OpenFile(dotenvFilePath, os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		return fmt.Errorf("error opening dotenv file in %s: %q", clusterDir, err)
+	}
+	defer closeFile(dotenvFile)
+	dotenvTemplate, err := template.New("dotenv").Parse(dotenvContent)
+	if err != nil {
+		return fmt.Errorf("error generating content for dotenv file in %s: %q", clusterDir, err)
+	}
+	if err = dotenvTemplate.Execute(dotenvFile, w); err != nil {
+		return fmt.Errorf("error writing to dotenv file in %s: %q", clusterDir, err)
 	}
 	return nil
 }
@@ -120,25 +120,25 @@ func (w *WorkConfig) makeDotenv(clusterDir string) error {
 func (w *WorkConfig) makeEnvrc(clusterDir string, useAsdf bool) error {
 	envrcFilePath := clusterDir + pathSep + ".envrc"
 	if fileInfo, err := os.Lstat(envrcFilePath); os.IsNotExist(err) || fileInfo.Size() == 0 {
-		_, err := os.OpenFile(envrcFilePath, os.O_CREATE, 0644)
+		_, err = os.OpenFile(envrcFilePath, os.O_CREATE, 0644)
 		if err != nil {
 			return err
 		}
-		envrcFile, err := os.OpenFile(envrcFilePath, os.O_APPEND|os.O_WRONLY, 0644)
-		if err != nil {
-			return fmt.Errorf("error opening envrc file in %s: %q", clusterDir, err)
-		}
-		defer closeFile(envrcFile)
-
-		envrcTemplate, err := template.New("envrc").Parse(envrcContent)
-		if err != nil {
-			return fmt.Errorf("error generating content for envrc file in %s: %q", clusterDir, err)
-		}
-		if err = envrcTemplate.Execute(envrcFile, w); err != nil {
-			return fmt.Errorf("error writing to envrc file in %s: %q", clusterDir, err)
-		}
 	} else if err != nil {
 		return fmt.Errorf("error creating envrc file in %s: %q", clusterDir, err)
+	}
+	envrcFile, err := os.OpenFile(envrcFilePath, os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		return fmt.Errorf("error opening envrc file in %s: %q", clusterDir, err)
+	}
+	defer closeFile(envrcFile)
+
+	envrcTemplate, err := template.New("envrc").Parse(envrcContent)
+	if err != nil {
+		return fmt.Errorf("error generating content for envrc file in %s: %q", clusterDir, err)
+	}
+	if err = envrcTemplate.Execute(envrcFile, w); err != nil {
+		return fmt.Errorf("error writing to envrc file in %s: %q", clusterDir, err)
 	}
 	return nil
 }
