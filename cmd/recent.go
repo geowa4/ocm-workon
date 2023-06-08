@@ -11,9 +11,9 @@ import (
 
 // listCmd represents the list command
 var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List clusters you have worked on",
-	Long:  `List clusters as JSON that you have worked on in the past _two weeks_. More options coming.`,
+	Use:   "recent",
+	Short: "List clusters you have worked on recently",
+	Long:  `List clusters as JSON that you have worked on in the past _two weeks_.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		clusters, err := cluster.FindClustersUpdatedSinceTwoWeeksAgo(viper.GetString("cluster_base_directory"))
 		marshaled, err := json.MarshalIndent(clusters, "", "  ")

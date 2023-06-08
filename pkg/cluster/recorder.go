@@ -9,15 +9,14 @@ import (
 
 type RecordedCluster struct {
 	gorm.Model
-	Environment             string
-	Name                    string
-	ID                      string
-	ExternalID              string
-	InfraID                 string
-	HiveShard               string
-	ManagementCluster       string
-	ServiceCluster          string
-	ComplianceAlertExpected bool
+	Environment       string
+	Name              string
+	ID                string
+	ExternalID        string
+	InfraID           string
+	HiveShard         string
+	ManagementCluster string
+	ServiceCluster    string
 }
 
 func NewRecordedCluster(environment string, ncd *NormalizedClusterData) *RecordedCluster {
