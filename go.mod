@@ -7,6 +7,7 @@ require (
 	github.com/openshift-online/ocm-sdk-go v0.1.344
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.15.0
+	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/driver/sqlite v1.5.1
 	gorm.io/gorm v1.25.1
 )

@@ -1,6 +1,7 @@
 package cluster
 
 import (
+	"github.com/geowa4/ocm-workon/pkg/utils"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -42,7 +43,7 @@ func (cluster *RecordedCluster) RecordAccess(baseDir string) error {
 }
 
 func makeDb(baseDir string) (*gorm.DB, error) {
-	db, err := gorm.Open(sqlite.Open(baseDir+pathSep+"workon.db"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open(baseDir+utils.PathSep+"workon.db"), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}

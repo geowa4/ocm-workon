@@ -1,4 +1,4 @@
-package shell
+package utils
 
 import (
 	"github.com/spf13/viper"
@@ -6,7 +6,7 @@ import (
 	"syscall"
 )
 
-func Exec(baseDir string, clusterDir string) error {
+func ShellExec(baseDir string, clusterDir string) error {
 	environ := append(os.Environ(),
 		"ZDOTDIR="+viper.GetString("cluster_base_directory"),
 		"CLUSTER_HOME="+clusterDir,

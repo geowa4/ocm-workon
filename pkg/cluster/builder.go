@@ -3,6 +3,7 @@ package cluster
 import (
 	_ "embed"
 	"fmt"
+	"github.com/geowa4/ocm-workon/pkg/utils"
 	"os"
 	"text/template"
 	"time"
@@ -54,8 +55,8 @@ func (w *WorkConfig) setEnvDependentFields() {
 	w.UserHomeDir, _ = os.UserHomeDir()
 }
 
-func (w *WorkConfig) createClusterDir() string {
-	return w.ClusterBase + pathSep + w.Environment + pathSep + w.ClusterData.Name
+func (w *WorkConfig) getClusterDirName() string {
+	return w.ClusterBase + utils.PathSep + w.Environment + utils.PathSep + w.ClusterData.Name
 }
 
 func (w *WorkConfig) Build() (string, error) {
@@ -65,8 +66,7 @@ func (w *WorkConfig) Build() (string, error) {
 
 	w.setEnvDependentFields()
 
-	clusterDir := w.createClusterDir()
-
+	clusterDir := w.getClusterDirName()
 	if err := os.MkdirAll(clusterDir, 0744); err != nil && !os.IsExist(err) {
 		return "", fmt.Errorf("could not create cluster directory in %s: %q", w.ClusterBase, err)
 	}
@@ -93,20 +93,21 @@ func (w *WorkConfig) Build() (string, error) {
 }
 
 func (w *WorkConfig) makeDotenv(clusterDir string) error {
-	dotenvFilePath := clusterDir + pathSep + ".env.cluster"
+	dotenvFilePath := clusterDir + utils.PathSep + ".env.cluster"
 	if _, err := os.Lstat(dotenvFilePath); os.IsNotExist(err) {
-		_, err = os.OpenFile(dotenvFilePath, os.O_CREATE, 0744)
+		dotenvFile, err := os.OpenFile(dotenvFilePath, os.O_CREATE, 0744)
 		if err != nil {
 			return err
 		}
+		_ = dotenvFile.Close()
 	} else if err != nil {
 		return fmt.Errorf("error creating dotenv file in %s: %q", clusterDir, err)
 	}
-	dotenvFile, err := os.OpenFile(dotenvFilePath, os.O_APPEND|os.O_WRONLY, 0644)
+	dotenvFile, err := os.OpenFile(dotenvFilePath, os.O_WRONLY, 0644)
 	if err != nil {
 		return fmt.Errorf("error opening dotenv file in %s: %q", clusterDir, err)
 	}
-	defer closeFile(dotenvFile)
+	defer utils.CloseFile(dotenvFile)
 	dotenvTemplate, err := template.New("dotenv").Parse(dotenvContent)
 	if err != nil {
 		return fmt.Errorf("error generating content for dotenv file in %s: %q", clusterDir, err)
@@ -118,20 +119,21 @@ func (w *WorkConfig) makeDotenv(clusterDir string) error {
 }
 
 func (w *WorkConfig) makeEnvrc(clusterDir string, useAsdf bool) error {
-	envrcFilePath := clusterDir + pathSep + ".envrc"
+	envrcFilePath := clusterDir + utils.PathSep + ".envrc"
 	if fileInfo, err := os.Lstat(envrcFilePath); os.IsNotExist(err) || fileInfo.Size() == 0 {
-		_, err = os.OpenFile(envrcFilePath, os.O_CREATE, 0644)
+		envrcFile, err := os.OpenFile(envrcFilePath, os.O_CREATE, 0644)
 		if err != nil {
 			return err
 		}
+		_ = envrcFile.Close()
 	} else if err != nil {
 		return fmt.Errorf("error creating envrc file in %s: %q", clusterDir, err)
 	}
-	envrcFile, err := os.OpenFile(envrcFilePath, os.O_APPEND|os.O_WRONLY, 0644)
+	envrcFile, err := os.OpenFile(envrcFilePath, os.O_WRONLY, 0644)
 	if err != nil {
 		return fmt.Errorf("error opening envrc file in %s: %q", clusterDir, err)
 	}
-	defer closeFile(envrcFile)
+	defer utils.CloseFile(envrcFile)
 
 	envrcTemplate, err := template.New("envrc").Parse(envrcContent)
 	if err != nil {
@@ -144,25 +146,27 @@ func (w *WorkConfig) makeEnvrc(clusterDir string, useAsdf bool) error {
 }
 
 func makeKubeconfig(clusterDir string) error {
-	kubeFilePath := clusterDir + pathSep + "kubeconfig"
+	kubeFilePath := clusterDir + utils.PathSep + "kubeconfig"
 	if _, err := os.Lstat(kubeFilePath); os.IsNotExist(err) {
-		_, err := os.OpenFile(kubeFilePath, os.O_CREATE, 0644)
+		kubeFile, err := os.OpenFile(kubeFilePath, os.O_CREATE, 0644)
 		if err != nil {
 			return err
 		}
+		_ = kubeFile.Close()
 	}
 	return nil
 }
 
 func makeNotesFile(clusterDir string) error {
 	desiredFile := "notes"
-	notesFilePath := clusterDir + pathSep + desiredFile
+	notesFilePath := clusterDir + utils.PathSep + desiredFile
 	notesIsNew := false
 	if _, err := os.Lstat(notesFilePath); os.IsNotExist(err) {
-		_, err := os.OpenFile(notesFilePath, os.O_CREATE, 0644)
+		notesFile, err := os.OpenFile(notesFilePath, os.O_CREATE, 0644)
 		if err != nil {
 			return err
 		}
+		_ = notesFile.Close()
 		notesIsNew = true
 	} else if err != nil {
 		return fmt.Errorf("error creating %s file in %s: %q", desiredFile, clusterDir, err)
@@ -172,7 +176,7 @@ func makeNotesFile(clusterDir string) error {
 	if err != nil {
 		return fmt.Errorf("error opening %s file in %s: %q", desiredFile, clusterDir, err)
 	}
-	defer closeFile(notesFile)
+	defer utils.CloseFile(notesFile)
 
 	notesPrefix := ""
 	if !notesIsNew {

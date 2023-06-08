@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/geowa4/ocm-workon/pkg/cluster"
-	"github.com/geowa4/ocm-workon/pkg/shell"
+	"github.com/geowa4/ocm-workon/pkg/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"os"
@@ -17,17 +17,17 @@ var clusterCmd = &cobra.Command{
 
 Example: cluster --production 15d716b7-b933-41ef-924c-53c2b59afe4f`,
 	Args: cobra.ExactArgs(1),
+	PreRun: func(cmd *cobra.Command, args []string) {
+		bindViperToClusterFlags(cmd)
+	},
 	Run: func(cmd *cobra.Command, args []string) {
-		environment := cluster.StagingEnvironment
-		if viper.GetBool("cluster_production") {
-			environment = cluster.ProductionEnvironment
+		environment := cluster.ProductionEnvironment
+		if viper.GetBool("cluster_staging") {
+			environment = cluster.StagingEnvironment
 		}
 
 		ncd, err := cluster.NewNormalizedCluster(args[0])
-		if err != nil {
-			fmt.Printf("error retrieving cluster data: %q\n", err)
-			os.Exit(1)
-		}
+		cobra.CheckErr(err)
 		baseDir := viper.GetString("cluster_base_directory")
 		w := &cluster.WorkConfig{
 			Environment: environment,
@@ -36,42 +36,44 @@ Example: cluster --production 15d716b7-b933-41ef-924c-53c2b59afe4f`,
 			UseDirenv:   viper.GetBool("cluster_use_direnv"),
 			UseAsdf:     viper.GetBool("cluster_use_asdf"),
 		}
-		if clusterDir, err := w.Build(); err != nil {
-			fmt.Println(err)
-			os.Exit(2)
-		} else {
-			recordedCluster := cluster.NewRecordedCluster(environment, ncd)
-			if err = recordedCluster.RecordAccess(baseDir); err != nil {
-				_, _ = fmt.Fprintf(os.Stderr, "[WARN] access of this cluster will not be recorded due to error: %q\n", err)
-			}
-			if err = shell.Exec(baseDir, clusterDir); err != nil {
-				fmt.Println(err)
-				os.Exit(3)
-			}
+		clusterDir, err := w.Build()
+		cobra.CheckErr(err)
+
+		recordedCluster := cluster.NewRecordedCluster(environment, ncd)
+		if err = recordedCluster.RecordAccess(baseDir); err != nil {
+			_, _ = fmt.Fprintf(os.Stderr, "Warning: access of this cluster will not be recorded due to error: %q\n", err)
 		}
+		cobra.CheckErr(utils.ShellExec(baseDir, clusterDir))
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(clusterCmd)
+	addConfigurationFlagsToClusterCmd(clusterCmd)
 
-	clusterCmd.Flags().BoolP("production", "p", false, "Whether this is a staging (default) or production cluster")
-	_ = viper.BindPFlag("cluster_production", clusterCmd.Flags().Lookup("production"))
+	clusterCmd.Flags().Bool("stage", false, "Whether this is a stage or production (default) cluster")
+}
 
-	clusterCmd.Flags().StringP("base-dir", "b", "", "The base directory for creating working environments for each cluster")
-	_ = viper.BindPFlag("cluster_base_directory", clusterCmd.Flags().Lookup("base-dir"))
-	_ = clusterCmd.MarkFlagDirname("base-dir")
+// Flags that can be backed up by a persistent config file or environment variables
+func addConfigurationFlagsToClusterCmd(cmd *cobra.Command) {
+	homeDir, _ := os.UserHomeDir()
+	cmd.Flags().StringP("base-dir", "b", homeDir+utils.PathSep+"Clusters", "The base directory for creating working environments for each cluster")
+	_ = cmd.MarkFlagDirname("base-dir")
 
-	clusterCmd.Flags().BoolP("use-direnv", "d", true, "Whether to use direnv")
-	_ = viper.BindPFlag("cluster_use_direnv", clusterCmd.Flags().Lookup("use-direnv"))
+	cmd.Flags().BoolP("use-direnv", "d", true, "Whether to use direnv")
 
-	clusterCmd.Flags().BoolP("use-asdf", "a", false, "Whether to use asdf in the .envrc for direnv")
-	_ = viper.BindPFlag("cluster_use_asdf", clusterCmd.Flags().Lookup("use-asdf"))
+	cmd.Flags().BoolP("use-asdf", "a", false, "Whether to use asdf in the .envrc for direnv")
 
-	clusterCmd.Flags().StringP("shell", "s", "/bin/zsh", "The shell or other executable to run when the directory is built")
-	_ = viper.BindPFlag("cluster_shell", clusterCmd.Flags().Lookup("shell"))
-	_ = clusterCmd.MarkFlagFilename("shell")
+	cmd.Flags().StringP("shell", "s", "/bin/zsh", "The shell or other executable to run when the directory is built")
+	_ = cmd.MarkFlagFilename("shell")
 
-	clusterCmd.Flags().StringArray("shell-args", []string{"--login", "-i"}, "Arguments to pass to the shell")
-	_ = viper.BindPFlag("cluster_shell_args", clusterCmd.Flags().Lookup("shell-args"))
+	cmd.Flags().StringArray("shell-args", []string{"--login", "-i"}, "Arguments to pass to the shell")
+}
+
+func bindViperToClusterFlags(cmd *cobra.Command) {
+	_ = viper.BindPFlag("cluster_base_directory", cmd.Flags().Lookup("base-dir"))
+	_ = viper.BindPFlag("cluster_use_direnv", cmd.Flags().Lookup("use-direnv"))
+	_ = viper.BindPFlag("cluster_use_asdf", cmd.Flags().Lookup("use-asdf"))
+	_ = viper.BindPFlag("cluster_shell", cmd.Flags().Lookup("shell"))
+	_ = viper.BindPFlag("cluster_shell_args", cmd.Flags().Lookup("shell-args"))
 }

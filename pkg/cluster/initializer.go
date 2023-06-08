@@ -2,6 +2,7 @@ package cluster
 
 import (
 	_ "embed"
+	"github.com/geowa4/ocm-workon/pkg/utils"
 	"os"
 )
 
@@ -19,16 +20,20 @@ func Initialize(baseDir string) error {
 }
 
 func makeZshrc(baseDir string) error {
-	zshrcFilePath := baseDir + pathSep + ".zshrc"
-	var zshrcFile *os.File
+	zshrcFilePath := baseDir + utils.PathSep + ".zshrc"
 	if _, err := os.Lstat(zshrcFilePath); os.IsNotExist(err) {
-		zshrcFile, err = os.OpenFile(zshrcFilePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0744)
+		zshrcFile, err := os.OpenFile(zshrcFilePath, os.O_CREATE, 0744)
 		if err != nil {
 			return err
 		}
-		defer closeFile(zshrcFile)
+		_ = zshrcFile.Close()
 	}
-	if _, err := zshrcFile.WriteString(zshrcContents); err != nil {
+	zshrcFile, err := os.OpenFile(zshrcFilePath, os.O_WRONLY, 0744)
+	if err != nil {
+		return err
+	}
+	defer utils.CloseFile(zshrcFile)
+	if _, err = zshrcFile.WriteString(zshrcContents); err != nil {
 		return err
 	}
 	return nil

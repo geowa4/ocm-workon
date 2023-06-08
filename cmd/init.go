@@ -1,10 +1,11 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/geowa4/ocm-workon/pkg/cluster"
+	"github.com/geowa4/ocm-workon/pkg/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"gopkg.in/yaml.v2"
 	"os"
 )
 
@@ -12,22 +13,27 @@ import (
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Initializes directories and files for other commands",
-	Long: `Creates the base directory for working on clusters and common zshrc file.
-
-Example: init --base-dir ~/Clusters`,
+	Long:  `Creates the base directory for working on clusters and common zshrc file. Additionally persists all passed in configuration to the config file. All flags for this command match the cluster command. Existing values in the configuration file are preserved.`,
+	PreRun: func(cmd *cobra.Command, args []string) {
+		bindViperToClusterFlags(cmd)
+	},
 	Run: func(cmd *cobra.Command, args []string) {
-		baseDir := viper.GetString("cluster_base_directory")
-		if err := cluster.Initialize(baseDir); err != nil {
-			fmt.Printf("error creating base directory: %q\n", err)
-			os.Exit(1)
-		}
+		cobra.CheckErr(cluster.Initialize(viper.GetString("cluster_base_directory")))
+		writeAllSettings()
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(initCmd)
+	addConfigurationFlagsToClusterCmd(initCmd)
+}
 
-	initCmd.Flags().StringP("base-dir", "b", "", "The base directory for creating working environments for each cluster")
-	_ = viper.BindPFlag("cluster_base_directory", initCmd.Flags().Lookup("base-dir"))
-	_ = initCmd.MarkFlagDirname("base-dir")
+func writeAllSettings() {
+	allSettings := viper.AllSettings()
+	marshaledSettings, err := yaml.Marshal(allSettings)
+	cobra.CheckErr(err)
+	configFile, err := os.OpenFile(getOcmConfigDir()+utils.PathSep+ConfigFileName, os.O_WRONLY, 0644)
+	cobra.CheckErr(err)
+	_, err = configFile.Write(marshaledSettings)
+	cobra.CheckErr(err)
 }
