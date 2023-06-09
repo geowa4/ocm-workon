@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"fmt"
+	"github.com/charmbracelet/log"
 	"github.com/geowa4/ocm-workon/pkg/cluster"
 	"github.com/geowa4/ocm-workon/pkg/shell"
 	"github.com/geowa4/ocm-workon/pkg/utils"
@@ -42,7 +42,7 @@ Example: cluster --production 15d716b7-b933-41ef-924c-53c2b59afe4f`,
 
 		recordedCluster := cluster.NewRecordedCluster(environment, ncd)
 		if err = recordedCluster.RecordAccess(baseDir); err != nil {
-			_, _ = fmt.Fprintf(os.Stderr, "Warning: access of this cluster will not be recorded due to error: %q\n", err)
+			log.Warn("access of this cluster will not be recorded due to error", "err", err)
 		}
 		cobra.CheckErr(shell.Exec(baseDir, clusterDir))
 	},

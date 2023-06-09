@@ -58,4 +58,3 @@ ocm workon recent
 
 - [ ] command to note that the cluster I'm working on should generate a compliance alert
 - [ ] search for recent clusters worked that I expected to have generated a compliance alert
-- [ ] use a logger, especially to report errors and warnings

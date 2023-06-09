@@ -3,10 +3,10 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/charmbracelet/log"
 	"github.com/geowa4/ocm-workon/pkg/cluster"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"os"
 )
 
 // listCmd represents the list command
@@ -21,8 +21,7 @@ var listCmd = &cobra.Command{
 		clusters, err := cluster.FindClustersUpdatedSinceTwoWeeksAgo(viper.GetString("cluster_base_directory"))
 		marshaled, err := json.MarshalIndent(clusters, "", "  ")
 		if err != nil {
-			_, _ = fmt.Fprintln(os.Stderr, err)
-			os.Exit(1)
+			log.Fatal(err)
 		} else {
 			fmt.Println(string(marshaled))
 		}

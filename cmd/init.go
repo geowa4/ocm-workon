@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"fmt"
+	"github.com/charmbracelet/log"
 	"github.com/geowa4/ocm-workon/pkg/cluster"
 	"github.com/geowa4/ocm-workon/pkg/config"
 	"github.com/geowa4/ocm-workon/pkg/utils"
@@ -46,12 +46,12 @@ func validateOcmConfigs() {
 	ocmConfigDir := config.GetOcmConfigDir()
 	prodConfig := ocmConfigDir + utils.PathSep + "ocm." + cluster.ProductionEnvironment + ".json"
 	if _, err := os.Lstat(prodConfig); err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "WARN: please create %s\n", prodConfig)
+		log.Warnf("please create %s", prodConfig)
 	}
 
 	stageConfig := ocmConfigDir + utils.PathSep + "ocm." + cluster.StagingEnvironment + ".json"
 	if _, err := os.Lstat(prodConfig); err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "WARN: please create %s\n", stageConfig)
+		log.Warnf("please create %s", stageConfig)
 	}
 }
 
@@ -59,11 +59,11 @@ func validateBackplaneConfigs() {
 	backplaneConfigDir := config.GetBackplaneConfigDir()
 	prodConfig := backplaneConfigDir + utils.PathSep + "config." + cluster.ProductionEnvironment + ".json"
 	if _, err := os.Lstat(prodConfig); err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "WARN: please create %s\n", prodConfig)
+		log.Warnf("please create %s", prodConfig)
 	}
 
 	stageConfig := backplaneConfigDir + utils.PathSep + "config." + cluster.StagingEnvironment + ".json"
-	if _, err := os.Lstat(prodConfig); err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "WARN: please create %s\n", stageConfig)
+	if _, err := os.Lstat(stageConfig); err != nil {
+		log.Warnf("please create %s", stageConfig)
 	}
 }
