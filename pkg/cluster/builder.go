@@ -3,6 +3,7 @@ package cluster
 import (
 	_ "embed"
 	"fmt"
+	"github.com/geowa4/ocm-workon/pkg/config"
 	"github.com/geowa4/ocm-workon/pkg/utils"
 	"os"
 	"text/template"
@@ -23,14 +24,15 @@ var envrcContent string
 var dotenvContent string
 
 type WorkConfig struct {
-	ClusterBase        string
-	Environment        string
-	OcmUrl             string
-	HCPNamespacePrefix string
-	UseDirenv          bool
-	UseAsdf            bool
-	UserHomeDir        string
-	ClusterData        *NormalizedClusterData
+	ClusterBase         string
+	Environment         string
+	OcmUrl              string
+	HCPNamespacePrefix  string
+	UseDirenv           bool
+	UseAsdf             bool
+	OcmConfigFile       string
+	BackplaneConfigFile string
+	ClusterData         *NormalizedClusterData
 }
 
 func (w *WorkConfig) Validate() error {
@@ -52,7 +54,8 @@ func (w *WorkConfig) setEnvDependentFields() {
 		w.OcmUrl = StagingOcmUrl
 		w.HCPNamespacePrefix = StagingHCPNamespacePrefix
 	}
-	w.UserHomeDir, _ = os.UserHomeDir()
+	w.OcmConfigFile = config.GetOcmConfigFile(w.Environment)
+	w.BackplaneConfigFile = config.GetBackplaneConfigFile(w.Environment)
 }
 
 func (w *WorkConfig) getClusterDirName() string {

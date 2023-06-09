@@ -43,26 +43,24 @@ func writeAllSettings() {
 }
 
 func validateOcmConfigs() {
-	ocmConfigDir := config.GetOcmConfigDir()
-	prodConfig := ocmConfigDir + utils.PathSep + "ocm." + cluster.ProductionEnvironment + ".json"
+	prodConfig := config.GetOcmConfigFile(cluster.ProductionEnvironment)
 	if _, err := os.Lstat(prodConfig); err != nil {
 		log.Warnf("please create %s", prodConfig)
 	}
 
-	stageConfig := ocmConfigDir + utils.PathSep + "ocm." + cluster.StagingEnvironment + ".json"
+	stageConfig := config.GetOcmConfigFile(cluster.StagingEnvironment)
 	if _, err := os.Lstat(prodConfig); err != nil {
 		log.Warnf("please create %s", stageConfig)
 	}
 }
 
 func validateBackplaneConfigs() {
-	backplaneConfigDir := config.GetBackplaneConfigDir()
-	prodConfig := backplaneConfigDir + utils.PathSep + "config." + cluster.ProductionEnvironment + ".json"
+	prodConfig := config.GetBackplaneConfigFile(cluster.ProductionEnvironment)
 	if _, err := os.Lstat(prodConfig); err != nil {
 		log.Warnf("please create %s", prodConfig)
 	}
 
-	stageConfig := backplaneConfigDir + utils.PathSep + "config." + cluster.StagingEnvironment + ".json"
+	stageConfig := config.GetBackplaneConfigFile(cluster.ProductionEnvironment)
 	if _, err := os.Lstat(stageConfig); err != nil {
 		log.Warnf("please create %s", stageConfig)
 	}

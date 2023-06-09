@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/charmbracelet/log"
 	"github.com/geowa4/ocm-workon/pkg/cluster"
+	"github.com/geowa4/ocm-workon/pkg/config"
 	"github.com/geowa4/ocm-workon/pkg/shell"
 	"github.com/geowa4/ocm-workon/pkg/utils"
 	"github.com/spf13/cobra"
@@ -27,6 +28,7 @@ Example: cluster --production 15d716b7-b933-41ef-924c-53c2b59afe4f`,
 			environment = cluster.StagingEnvironment
 		}
 
+		cobra.CheckErr(os.Setenv("OCM_CONFIG", config.GetOcmConfigFile(environment)))
 		ncd, err := cluster.NewNormalizedCluster(args[0])
 		cobra.CheckErr(err)
 		baseDir := viper.GetString("cluster_base_directory")

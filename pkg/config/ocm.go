@@ -10,8 +10,16 @@ func GetOcmConfigDir() string {
 	return getHomeConfigDir() + utils.PathSep + "ocm"
 }
 
+func GetOcmConfigFile(environment string) string {
+	return GetOcmConfigDir() + utils.PathSep + "ocm." + environment + ".json"
+}
+
 func GetBackplaneConfigDir() string {
 	return getHomeConfigDir() + utils.PathSep + "backplane"
+}
+
+func GetBackplaneConfigFile(environment string) string {
+	return GetBackplaneConfigDir() + utils.PathSep + "config." + environment + ".json"
 }
 
 func getHomeConfigDir() string {
