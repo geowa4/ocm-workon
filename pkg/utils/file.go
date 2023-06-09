@@ -4,6 +4,6 @@ import "os"
 
 const PathSep = string(os.PathSeparator)
 
-func CloseFile(f *os.File) {
+func CloseFileAndIgnoreErrors(f *os.File) {
 	_ = f.Close()
 }

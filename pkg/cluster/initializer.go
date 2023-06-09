@@ -32,7 +32,7 @@ func makeZshrc(baseDir string) error {
 	if err != nil {
 		return err
 	}
-	defer utils.CloseFile(zshrcFile)
+	defer utils.CloseFileAndIgnoreErrors(zshrcFile)
 	if _, err = zshrcFile.WriteString(zshrcContents); err != nil {
 		return err
 	}

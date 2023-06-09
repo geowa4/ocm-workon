@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/geowa4/ocm-workon/pkg/cluster"
+	"github.com/geowa4/ocm-workon/pkg/shell"
 	"github.com/geowa4/ocm-workon/pkg/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -22,7 +23,7 @@ Example: cluster --production 15d716b7-b933-41ef-924c-53c2b59afe4f`,
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		environment := cluster.ProductionEnvironment
-		if viper.GetBool("cluster_staging") {
+		if cmd.Flags().Lookup("stage").Value.String() == "true" {
 			environment = cluster.StagingEnvironment
 		}
 
@@ -43,7 +44,7 @@ Example: cluster --production 15d716b7-b933-41ef-924c-53c2b59afe4f`,
 		if err = recordedCluster.RecordAccess(baseDir); err != nil {
 			_, _ = fmt.Fprintf(os.Stderr, "Warning: access of this cluster will not be recorded due to error: %q\n", err)
 		}
-		cobra.CheckErr(utils.ShellExec(baseDir, clusterDir))
+		cobra.CheckErr(shell.Exec(baseDir, clusterDir))
 	},
 }
 

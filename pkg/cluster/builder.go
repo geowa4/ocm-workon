@@ -107,7 +107,7 @@ func (w *WorkConfig) makeDotenv(clusterDir string) error {
 	if err != nil {
 		return fmt.Errorf("error opening dotenv file in %s: %q", clusterDir, err)
 	}
-	defer utils.CloseFile(dotenvFile)
+	defer utils.CloseFileAndIgnoreErrors(dotenvFile)
 	dotenvTemplate, err := template.New("dotenv").Parse(dotenvContent)
 	if err != nil {
 		return fmt.Errorf("error generating content for dotenv file in %s: %q", clusterDir, err)
@@ -133,7 +133,7 @@ func (w *WorkConfig) makeEnvrc(clusterDir string, useAsdf bool) error {
 	if err != nil {
 		return fmt.Errorf("error opening envrc file in %s: %q", clusterDir, err)
 	}
-	defer utils.CloseFile(envrcFile)
+	defer utils.CloseFileAndIgnoreErrors(envrcFile)
 
 	envrcTemplate, err := template.New("envrc").Parse(envrcContent)
 	if err != nil {
@@ -176,7 +176,7 @@ func makeNotesFile(clusterDir string) error {
 	if err != nil {
 		return fmt.Errorf("error opening %s file in %s: %q", desiredFile, clusterDir, err)
 	}
-	defer utils.CloseFile(notesFile)
+	defer utils.CloseFileAndIgnoreErrors(notesFile)
 
 	notesPrefix := ""
 	if !notesIsNew {

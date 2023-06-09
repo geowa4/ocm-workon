@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/geowa4/ocm-workon/pkg/cluster"
+	"github.com/geowa4/ocm-workon/pkg/config"
 	"github.com/geowa4/ocm-workon/pkg/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -20,6 +22,8 @@ var initCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		cobra.CheckErr(cluster.Initialize(viper.GetString("cluster_base_directory")))
 		writeAllSettings()
+		validateOcmConfigs()
+		validateBackplaneConfigs()
 	},
 }
 
@@ -32,8 +36,34 @@ func writeAllSettings() {
 	allSettings := viper.AllSettings()
 	marshaledSettings, err := yaml.Marshal(allSettings)
 	cobra.CheckErr(err)
-	configFile, err := os.OpenFile(getOcmConfigDir()+utils.PathSep+ConfigFileName, os.O_WRONLY, 0644)
+	configFile, err := os.OpenFile(config.GetOcmConfigDir()+utils.PathSep+ConfigFileName, os.O_WRONLY, 0644)
 	cobra.CheckErr(err)
 	_, err = configFile.Write(marshaledSettings)
 	cobra.CheckErr(err)
+}
+
+func validateOcmConfigs() {
+	ocmConfigDir := config.GetOcmConfigDir()
+	prodConfig := ocmConfigDir + utils.PathSep + "ocm." + cluster.ProductionEnvironment + ".json"
+	if _, err := os.Lstat(prodConfig); err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "WARN: please create %s\n", prodConfig)
+	}
+
+	stageConfig := ocmConfigDir + utils.PathSep + "ocm." + cluster.StagingEnvironment + ".json"
+	if _, err := os.Lstat(prodConfig); err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "WARN: please create %s\n", stageConfig)
+	}
+}
+
+func validateBackplaneConfigs() {
+	backplaneConfigDir := config.GetBackplaneConfigDir()
+	prodConfig := backplaneConfigDir + utils.PathSep + "config." + cluster.ProductionEnvironment + ".json"
+	if _, err := os.Lstat(prodConfig); err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "WARN: please create %s\n", prodConfig)
+	}
+
+	stageConfig := backplaneConfigDir + utils.PathSep + "config." + cluster.StagingEnvironment + ".json"
+	if _, err := os.Lstat(prodConfig); err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "WARN: please create %s\n", stageConfig)
+	}
 }

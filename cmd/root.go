@@ -2,8 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-
+	"github.com/geowa4/ocm-workon/pkg/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -41,7 +40,7 @@ func initConfig() {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
 	} else {
-		ocmConfigDir := getOcmConfigDir()
+		ocmConfigDir := config.GetOcmConfigDir()
 		viper.AddConfigPath(ocmConfigDir)
 		viper.SetConfigType("yaml")
 		viper.SetConfigName(ConfigFileName)
@@ -55,15 +54,4 @@ func initConfig() {
 			cobra.CheckErr(fmt.Errorf("bad config file (%s): %q", viper.ConfigFileUsed(), err))
 		}
 	}
-}
-
-func getOcmConfigDir() string {
-	home, err := os.UserHomeDir()
-	cobra.CheckErr(err)
-	configDir := home + string(os.PathSeparator) + ".config"
-	if xdgConfigHome := os.Getenv("XDG_CONFIG_HOME"); xdgConfigHome != "" {
-		configDir = xdgConfigHome
-	}
-	ocmConfigDir := configDir + string(os.PathSeparator) + "ocm"
-	return ocmConfigDir
 }

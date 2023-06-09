@@ -51,7 +51,7 @@ This will record that you have worked on this cluster in a SQLite database in yo
 To query that, run the list command.
 
 ```shell
-ocm workon list
+ocm workon recent
 ```
 
 ## TODO
