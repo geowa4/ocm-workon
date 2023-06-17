@@ -24,12 +24,12 @@ Example: recent --since 2w`,
 			err       error
 		)
 		if cmd.Flags().Lookup("elevations").Value.String() == "true" {
-			resources, err = cluster.FindRecordingsSince[cluster.Elevation](
+			resources, err = cluster.FindElevationsSince(
 				viper.GetString("cluster_base_directory"),
 				cmd.Flags().Lookup("since").Value.String(),
 			)
 		} else {
-			resources, err = cluster.FindRecordingsSince[cluster.RecordedCluster](
+			resources, err = cluster.FindRecordedClustersSince(
 				viper.GetString("cluster_base_directory"),
 				cmd.Flags().Lookup("since").Value.String(),
 			)
@@ -49,5 +49,5 @@ func init() {
 
 	listCmd.Flags().String("since", "24h", "How far back to search for clusters or elevations")
 
-	listCmd.Flags().Bool("elevations", true, "Whether to load elevations or the default clusters")
+	listCmd.Flags().Bool("elevations", false, "Whether to load elevations or the default clusters")
 }

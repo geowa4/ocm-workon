@@ -7,10 +7,6 @@ import (
 	"time"
 )
 
-type SavedResource interface {
-	RecordedCluster | Elevation
-}
-
 type RecordedCluster struct {
 	gorm.Model
 	Environment       string
@@ -79,7 +75,7 @@ func makeDb(baseDir string) (*gorm.DB, error) {
 	return db, nil
 }
 
-func FindRecordingsSince[T SavedResource](baseDir, timeAgo string) (resources []T, err error) {
+func findRecordingsSince(baseDir, timeAgo string, queryFunc func(*gorm.DB, time.Time)) (err error) {
 	db, err := makeDb(baseDir)
 	if err != nil {
 		return
@@ -89,39 +85,24 @@ func FindRecordingsSince[T SavedResource](baseDir, timeAgo string) (resources []
 		return
 	}
 	sinceWhen := time.Now().Add(-1 * timeAgoAsDuration)
-	db.Joins("RecordedCluster").Where("elevations.updated_at > ?", sinceWhen).
-		Order("elevations.updated_at").
-		Find(&resources)
+	queryFunc(db, sinceWhen)
 	return
 }
 
-func FindClustersUpdatedSince(baseDir string, timeAgo string) (clusters []RecordedCluster, err error) {
-	db, err := makeDb(baseDir)
-	if err != nil {
-		return
-	}
-	timeAgoAsDuration, err := time.ParseDuration(timeAgo)
-	if err != nil {
-		return
-	}
-	sinceWhen := time.Now().Add(-1 * timeAgoAsDuration)
-	db.Where("updated_at > ?", sinceWhen).
-		Order("updated_at").
-		Find(&clusters)
+func FindRecordedClustersSince(baseDir, timeAgo string) (clusters []RecordedCluster, err error) {
+	err = findRecordingsSince(baseDir, timeAgo, func(db *gorm.DB, sinceWhen time.Time) {
+		db.Where("updated_at > ?", sinceWhen).
+			Order("updated_at").
+			Find(&clusters)
+	})
 	return
 }
 
-func FindElevationsSince(baseDir string, timeAgo string) (elevations []Elevation, err error) {
-	db, err := makeDb(baseDir)
-	if err != nil {
-		return
-	}
-	timeAgoAsDuration, err := time.ParseDuration(timeAgo)
-	if err != nil {
-		return
-	}
-	sinceWhen := time.Now().Add(-1 * timeAgoAsDuration)
-	db.Where("updated_at > ?", sinceWhen).
-		Order("updated_at").Find(&elevations)
+func FindElevationsSince(baseDir, timeAgo string) (elevations []Elevation, err error) {
+	err = findRecordingsSince(baseDir, timeAgo, func(db *gorm.DB, sinceWhen time.Time) {
+		db.Joins("RecordedCluster").Where("elevations.updated_at > ?", sinceWhen).
+			Order("elevations.updated_at").
+			Find(&elevations)
+	})
 	return
 }
