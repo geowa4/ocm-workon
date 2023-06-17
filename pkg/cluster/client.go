@@ -57,17 +57,43 @@ func (c *Client) CollectNormalizedClusterData() (*NormalizedClusterData, error) 
 		ncd.ManagementCluster, ncd.ServiceCluster = findHyperShiftMgmtSvcClusters(conn, cluster)
 	} else {
 		// Find the details of the shard
-		shardPath, err := conn.ClustersMgmt().V1().Clusters().
-			Cluster(cluster.ID()).
-			ProvisionShard().
-			Get().
-			Send()
-		if shardPath != nil && err == nil {
-			ncd.HiveShard = shardPath.Body().HiveConfig().Server()
+		hiveCluster, err := findHiveCluster(conn, cluster)
+		if err != nil {
+			return nil, err
 		}
+		ncd.HiveShard = hiveCluster.Name()
 	}
 
 	return ncd, nil
+}
+
+func findHiveCluster(conn *sdk.Connection, cluster *cmv1.Cluster) (*cmv1.Cluster, error) {
+	provisionShard, err := conn.ClustersMgmt().V1().Clusters().
+		Cluster(cluster.ID()).
+		ProvisionShard().
+		Get().
+		Send()
+	if err != nil {
+		return nil, err
+	}
+
+	hiveApiUrl, ok := provisionShard.Body().HiveConfig().GetServer()
+	if !ok {
+		return nil, fmt.Errorf("no provision shard url found for %s", cluster.ID())
+	}
+
+	resp, err := conn.ClustersMgmt().V1().Clusters().List().
+		Parameter("search", fmt.Sprintf("api.url='%s'", hiveApiUrl)).
+		Send()
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.Items().Empty() {
+		return nil, fmt.Errorf("failed to find cluster with api.url=%s", hiveApiUrl)
+	}
+
+	return resp.Items().Get(0), nil
 }
 
 func findHyperShiftMgmtSvcClusters(conn *sdk.Connection, cluster *cmv1.Cluster) (string, string) {

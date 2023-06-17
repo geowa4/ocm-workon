@@ -37,7 +37,6 @@ Example: cluster --production 15d716b7-b933-41ef-924c-53c2b59afe4f`,
 			ClusterData: ncd,
 			ClusterBase: baseDir,
 			UseDirenv:   viper.GetBool("cluster_use_direnv"),
-			UseAsdf:     viper.GetBool("cluster_use_asdf"),
 		}
 		clusterDir, err := w.Build()
 		cobra.CheckErr(err)
@@ -65,8 +64,6 @@ func addConfigurationFlagsToClusterCmd(cmd *cobra.Command) {
 
 	cmd.Flags().BoolP("use-direnv", "d", true, "Whether to use direnv")
 
-	cmd.Flags().BoolP("use-asdf", "a", false, "Whether to use asdf in the .envrc for direnv")
-
 	cmd.Flags().StringP("shell", "s", "/bin/zsh", "The shell or other executable to run when the directory is built")
 	_ = cmd.MarkFlagFilename("shell")
 
@@ -76,7 +73,6 @@ func addConfigurationFlagsToClusterCmd(cmd *cobra.Command) {
 func bindViperToClusterFlags(cmd *cobra.Command) {
 	_ = viper.BindPFlag("cluster_base_directory", cmd.Flags().Lookup("base-dir"))
 	_ = viper.BindPFlag("cluster_use_direnv", cmd.Flags().Lookup("use-direnv"))
-	_ = viper.BindPFlag("cluster_use_asdf", cmd.Flags().Lookup("use-asdf"))
 	_ = viper.BindPFlag("cluster_shell", cmd.Flags().Lookup("shell"))
 	_ = viper.BindPFlag("cluster_shell_args", cmd.Flags().Lookup("shell-args"))
 }

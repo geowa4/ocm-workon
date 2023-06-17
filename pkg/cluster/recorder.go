@@ -4,9 +4,12 @@ import (
 	"github.com/geowa4/ocm-workon/pkg/utils"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 	"time"
 )
+
+type SavedResource interface {
+	RecordedCluster | Elevation
+}
 
 type RecordedCluster struct {
 	gorm.Model
@@ -18,6 +21,29 @@ type RecordedCluster struct {
 	HiveShard         string
 	ManagementCluster string
 	ServiceCluster    string
+	Elevations        []Elevation `json:",omitempty"`
+}
+
+type Elevation struct {
+	gorm.Model
+	RecordedClusterID string `json:"-"`
+	RecordedCluster   RecordedCluster
+	Source            string
+	Reason            string
+}
+
+func RecordElevation(baseDir string, clusterId string, source string, reason string) error {
+	db, err := makeDb(baseDir)
+	if err != nil {
+		return err
+	}
+	elevation := &Elevation{
+		RecordedCluster: RecordedCluster{ID: clusterId},
+		Source:          source,
+		Reason:          reason,
+	}
+	db.Save(elevation)
+	return nil
 }
 
 func NewRecordedCluster(environment string, ncd *NormalizedClusterData) *RecordedCluster {
@@ -38,7 +64,7 @@ func (cluster *RecordedCluster) RecordAccess(baseDir string) error {
 	if err != nil {
 		return err
 	}
-	save(db, cluster)
+	db.Save(cluster)
 	return nil
 }
 
@@ -47,24 +73,55 @@ func makeDb(baseDir string) (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err = db.AutoMigrate(&RecordedCluster{}); err != nil {
+	if err = db.AutoMigrate(&Elevation{}, &RecordedCluster{}); err != nil {
 		return nil, err
 	}
 	return db, nil
 }
 
-func save(db *gorm.DB, ncd *RecordedCluster) {
-	db.Clauses(clause.OnConflict{
-		UpdateAll: true,
-	}).Create(ncd)
-}
-
-func FindClustersUpdatedSinceTwoWeeksAgo(baseDir string) (clusters []RecordedCluster, err error) {
+func FindRecordingsSince[T SavedResource](baseDir, timeAgo string) (resources []T, err error) {
 	db, err := makeDb(baseDir)
 	if err != nil {
 		return
 	}
-	twoWeeksAgo := time.Now().Add(-24 * time.Hour * 14)
-	db.Where("updated_at > ?", twoWeeksAgo).Find(&clusters)
+	timeAgoAsDuration, err := time.ParseDuration(timeAgo)
+	if err != nil {
+		return
+	}
+	sinceWhen := time.Now().Add(-1 * timeAgoAsDuration)
+	db.Joins("RecordedCluster").Where("elevations.updated_at > ?", sinceWhen).
+		Order("elevations.updated_at").
+		Find(&resources)
+	return
+}
+
+func FindClustersUpdatedSince(baseDir string, timeAgo string) (clusters []RecordedCluster, err error) {
+	db, err := makeDb(baseDir)
+	if err != nil {
+		return
+	}
+	timeAgoAsDuration, err := time.ParseDuration(timeAgo)
+	if err != nil {
+		return
+	}
+	sinceWhen := time.Now().Add(-1 * timeAgoAsDuration)
+	db.Where("updated_at > ?", sinceWhen).
+		Order("updated_at").
+		Find(&clusters)
+	return
+}
+
+func FindElevationsSince(baseDir string, timeAgo string) (elevations []Elevation, err error) {
+	db, err := makeDb(baseDir)
+	if err != nil {
+		return
+	}
+	timeAgoAsDuration, err := time.ParseDuration(timeAgo)
+	if err != nil {
+		return
+	}
+	sinceWhen := time.Now().Add(-1 * timeAgoAsDuration)
+	db.Where("updated_at > ?", sinceWhen).
+		Order("updated_at").Find(&elevations)
 	return
 }

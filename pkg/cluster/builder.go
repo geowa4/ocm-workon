@@ -29,7 +29,6 @@ type WorkConfig struct {
 	OcmUrl              string
 	HCPNamespacePrefix  string
 	UseDirenv           bool
-	UseAsdf             bool
 	OcmConfigFile       string
 	BackplaneConfigFile string
 	ClusterData         *NormalizedClusterData
@@ -87,7 +86,7 @@ func (w *WorkConfig) Build() (string, error) {
 	}
 
 	if w.UseDirenv {
-		if err := w.makeEnvrc(clusterDir, w.UseAsdf); err != nil {
+		if err := w.makeEnvrc(clusterDir); err != nil {
 			return "", err
 		}
 	}
@@ -121,7 +120,7 @@ func (w *WorkConfig) makeDotenv(clusterDir string) error {
 	return nil
 }
 
-func (w *WorkConfig) makeEnvrc(clusterDir string, useAsdf bool) error {
+func (w *WorkConfig) makeEnvrc(clusterDir string) error {
 	envrcFilePath := clusterDir + utils.PathSep + ".envrc"
 	if fileInfo, err := os.Lstat(envrcFilePath); os.IsNotExist(err) || fileInfo.Size() == 0 {
 		envrcFile, err := os.OpenFile(envrcFilePath, os.O_CREATE, 0644)
