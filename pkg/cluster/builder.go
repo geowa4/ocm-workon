@@ -29,7 +29,6 @@ type WorkConfig struct {
 	OcmUrl              string
 	HCPNamespacePrefix  string
 	UseDirenv           bool
-	OcmConfigFile       string
 	BackplaneConfigFile string
 	ClusterData         *NormalizedClusterData
 }
@@ -53,7 +52,6 @@ func (w *WorkConfig) setEnvDependentFields() {
 		w.OcmUrl = StagingOcmUrl
 		w.HCPNamespacePrefix = StagingHCPNamespacePrefix
 	}
-	w.OcmConfigFile = config.GetOcmConfigFile(w.Environment)
 	w.BackplaneConfigFile = config.GetBackplaneConfigFile(w.Environment)
 }
 

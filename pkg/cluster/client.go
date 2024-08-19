@@ -2,6 +2,7 @@ package cluster
 
 import (
 	"fmt"
+	"github.com/charmbracelet/log"
 	cliCluster "github.com/openshift-online/ocm-cli/pkg/cluster"
 	"github.com/openshift-online/ocm-cli/pkg/ocm"
 	sdk "github.com/openshift-online/ocm-sdk-go"
@@ -61,12 +62,17 @@ func (c *Client) CollectNormalizedClusterData() (*NormalizedClusterData, error) 
 		if err != nil {
 			return nil, err
 		}
-		ncd.HiveShard = hiveCluster.Name()
+		if hiveCluster == nil {
+			ncd.HiveShard = ""
+		} else {
+			ncd.HiveShard = hiveCluster.Name()
+		}
 	}
 
 	return ncd, nil
 }
 
+// TODO: hives are always prod
 func findHiveCluster(conn *sdk.Connection, cluster *cmv1.Cluster) (*cmv1.Cluster, error) {
 	provisionShard, err := conn.ClustersMgmt().V1().Clusters().
 		Cluster(cluster.ID()).
@@ -90,7 +96,8 @@ func findHiveCluster(conn *sdk.Connection, cluster *cmv1.Cluster) (*cmv1.Cluster
 	}
 
 	if resp.Items().Empty() {
-		return nil, fmt.Errorf("failed to find cluster with api.url=%s", hiveApiUrl)
+		log.Errorf("failed to find cluster with api.url=%s", hiveApiUrl)
+		return nil, nil
 	}
 
 	return resp.Items().Get(0), nil

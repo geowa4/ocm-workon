@@ -22,7 +22,6 @@ var initCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		cobra.CheckErr(cluster.Initialize(viper.GetString("cluster_base_directory")))
 		writeAllSettings()
-		validateOcmConfigs()
 		validateBackplaneConfigs()
 	},
 }
@@ -40,18 +39,6 @@ func writeAllSettings() {
 	cobra.CheckErr(err)
 	_, err = configFile.Write(marshaledSettings)
 	cobra.CheckErr(err)
-}
-
-func validateOcmConfigs() {
-	prodConfig := config.GetOcmConfigFile(cluster.ProductionEnvironment)
-	if _, err := os.Lstat(prodConfig); err != nil {
-		log.Warnf("please create %s", prodConfig)
-	}
-
-	stageConfig := config.GetOcmConfigFile(cluster.StagingEnvironment)
-	if _, err := os.Lstat(prodConfig); err != nil {
-		log.Warnf("please create %s", stageConfig)
-	}
 }
 
 func validateBackplaneConfigs() {
