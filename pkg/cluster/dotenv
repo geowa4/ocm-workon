@@ -3,7 +3,6 @@ CLUSTER_HOME={{.ClusterBase}}/{{.Environment}}/{{.ClusterData.Name}}
 KUBECONFIG={{.ClusterBase}}/{{.Environment}}/{{.ClusterData.Name}}/kubeconfig
 BACKPLANE_CONFIG={{.BackplaneConfigFile}}
 OCM_ENVIRONMENT={{.Environment}}
-OCM_URL='{{.OcmUrl}}'
 
 ENV={{.Environment}}
 CLUSTER_NAME={{.ClusterData.Name}}

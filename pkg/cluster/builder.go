@@ -12,8 +12,6 @@ import (
 
 const ProductionEnvironment = "prod"
 const StagingEnvironment = "stage"
-const ProductionOcmUrl = "https://api.openshift.com"
-const StagingOcmUrl = "https://api.stage.openshift.com"
 const ProductionHCPNamespacePrefix = "ocm-production-"
 const StagingHCPNamespacePrefix = "ocm-staging-"
 
@@ -26,7 +24,6 @@ var dotenvContent string
 type WorkConfig struct {
 	ClusterBase         string
 	Environment         string
-	OcmUrl              string
 	HCPNamespacePrefix  string
 	UseDirenv           bool
 	BackplaneConfigFile string
@@ -46,10 +43,8 @@ func (w *WorkConfig) Validate() error {
 
 func (w *WorkConfig) setEnvDependentFields() {
 	if w.Environment == ProductionEnvironment {
-		w.OcmUrl = ProductionOcmUrl
 		w.HCPNamespacePrefix = ProductionHCPNamespacePrefix
 	} else {
-		w.OcmUrl = StagingOcmUrl
 		w.HCPNamespacePrefix = StagingHCPNamespacePrefix
 	}
 	w.BackplaneConfigFile = config.GetBackplaneConfigFile(w.Environment)
